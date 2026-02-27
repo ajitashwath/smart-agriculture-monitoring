@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAMS — Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #080808;
+            --bg2: #101010;
+            --bg3: #181818;
+            --border: #2a2a2a;
+            --border-bright: #404040;
+            --white: #f0f0f0;
+            --gray-light: #b0b0b0;
+            --gray-mid: #606060;
+            --accent-dim: rgba(255, 255, 255, 0.06);
+            --green: rgba(76, 175, 80, 0.15);
+            --green-text: #4caf50;
+            --orange: rgba(255, 152, 0, 0.15);
+            --orange-text: #ff9800;
+            --red: rgba(244, 67, 54, 0.15);
+            --red-text: #f44336;
+            --font: 'Inter', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--white);
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar + header layout ─── */
+        .shell {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+        }
+
+        .header {
+            grid-column: 1/-1;
+            background: rgba(8, 8, 8, 0.95);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo {
+            width: 28px;
+            height: 28px;
+            background: var(--white);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--bg);
+        }
+
+        .brand-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .brand-sub {
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--gray-mid);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dash-link {
+            font-size: 0.75rem;
+            text-decoration: none;
+            color: var(--gray-light);
+            border: 1px solid var(--border-bright);
+            border-radius: 6px;
+            padding: 0.3rem 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .dash-link:hover {
+            background: var(--accent-dim);
+            color: var(--white);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4caf50;
+            box-shadow: 0 0 8px #4caf5088;
+        }
+
+        /* ── Nav ─────────────────────────────── */
+        nav {
+            background: var(--bg2);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            overflow-y: auto;
+        }
+
+        .nav-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--gray-mid);
+            padding: 0.5rem 0.75rem 0.25rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            color: var(--gray-light);
+            transition: all 0.15s;
+            border: 1px solid transparent;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: var(--accent-dim);
+            border-color: var(--border);
+            color: var(--white);
+        }
+
+        .nav-item.active {
+            background: var(--accent-dim);
+            border-color: var(--border-bright);
+            color: var(--white);
+        }
+
+        .nav-icon {
+            font-size: 1rem;
+        }
+
+        /* ── Content ─────────────────────────── */
+        .content {
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .page-sub {
+            font-size: 0.78rem;
+            color: var(--gray-mid);
+            margin-bottom: 1.5rem;
+        }
+
+        /* ── Cards ───────────────────────────── */
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            transition: border-color 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--border-bright);
+        }
+
+        .card-title {
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--gray-light);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        /* ── Table ───────────────────────────── */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--gray-mid);
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            font-size: 0.78rem;
+            padding: 0.65rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--gray-light);
+            font-family: var(--mono);
+        }
+
+        .data-table tr:hover td {
+            background: var(--accent-dim);
+        }
+
+        /* ── Badges ──────────────────────────── */
+        .badge {
+            display: inline-block;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .badge-green {
+            background: var(--green);
+            color: var(--green-text);
+        }
+
+        .badge-orange {
+            background: var(--orange);
+            color: var(--orange-text);
+        }
+
+        .badge-red {
+            background: var(--red);
+            color: var(--red-text);
+        }
+
+        .badge-gray {
+            background: var(--accent-dim);
+            color: var(--gray-light);
+        }
+
+        /* ── Alert Items ─────────────────────── */
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .alert-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg3);
+            transition: border-color 0.2s;
+            animation: slide-in 0.3s ease;
+        }
+
+        @keyframes slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(-6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .alert-row.critical {
+            border-color: rgba(244, 67, 54, 0.35);
+            background: rgba(244, 67, 54, 0.04);
+        }
+
+        .alert-row.warning {
+            border-color: rgba(255, 152, 0, 0.35);
+            background: rgba(255, 152, 0, 0.04);
+        }
+
+        .alert-info-col {
+            flex: 1;
+        }
+
+        .alert-type-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .alert-msg {
+            font-size: 0.8rem;
+            margin: 0.2rem 0;
+            color: var(--white);
+        }
+
+        .alert-meta {
+            font-size: 0.65rem;
+            color: var(--gray-mid);
+            font-family: var(--mono);
+        }
+
+        .ack-btn {
+            padding: 0.3rem 0.7rem;
+            font-size: 0.7rem;
+            border: 1px solid var(--border-bright);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--gray-light);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .ack-btn:hover {
+            background: var(--accent-dim);
+            color: var(--white);
+        }
+
+        /* ── Market Price Cards ─────────────── */
+        .market-card {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .market-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .market-price {
+            font-family: var(--mono);
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .market-sub {
+            font-size: 0.65rem;
+            color: var(--gray-mid);
+            margin-top: 0.15rem;
+        }
+
+        .market-trend {
+            font-size: 0.7rem;
+            margin-top: 0.4rem;
+        }
+
+        .market-trend.UP {
+            color: var(--green-text);
+        }
+
+        .market-trend.DOWN {
+            color: var(--red-text);
+        }
+
+        .market-trend.STABLE {
+            color: var(--gray-mid);
+        }
+
+        /* ── Crop Recommendation ────────────── */
+        .crop-card {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg3);
+        }
+
+        .crop-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .crop-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.4rem 0;
+        }
+
+        .score-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: var(--white);
+            border-radius: 2px;
+        }
+
+        .score-val {
+            font-family: var(--mono);
+            font-size: 0.75rem;
+        }
+
+        .crop-meta {
+            font-size: 0.7rem;
+            color: var(--gray-mid);
+            line-height: 1.5;
+        }
+
+        /* ── Override Form ──────────────────── */
+        .override-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 480px;
+        }
+
+        .form-group label {
+            font-size: 0.72rem;
+            color: var(--gray-mid);
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            background: var(--bg3);
+            border: 1px solid var(--border-bright);
+            color: var(--white);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-family: var(--font);
+            font-size: 0.82rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            border-color: var(--white);
+        }
+
+        .btn-primary {
+            padding: 0.6rem 1.5rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            background: var(--white);
+            color: var(--bg);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.85;
+        }
+
+        .btn-danger {
+            padding: 0.6rem 1.5rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            background: var(--red-text);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        /* ── Camera Feed ────────────────────── */
+        .camera-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .camera-card {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .camera-preview {
+            height: 120px;
+            background: repeating-linear-gradient(-45deg, #111 0px, #111 10px, #0e0e0e 10px, #0e0e0e 20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .camera-label {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 0.6rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: var(--mono);
+        }
+
+        .camera-live {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 0.6rem;
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            padding: 2px 6px;
+            border-radius: 4px;
+            animation: pulse-label 2s infinite;
+        }
+
+        @keyframes pulse-label {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.4
+            }
+        }
+
+        .camera-icon {
+            font-size: 2rem;
+            color: var(--border-bright);
+        }
+
+        .camera-info {
+            padding: 0.75rem;
+            font-size: 0.73rem;
+        }
+
+        .camera-event-type {
+            font-weight: 600;
+        }
+
+        .camera-time {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--gray-mid);
+        }
+
+        /* ── Chart ───────────────────────────── */
+        .chart-wrap {
+            height: 200px;
+            position: relative;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-bright);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="shell">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="brand">
+                <div class="logo">SA</div>
+                <div>
+                    <div class="brand-name">SAMS Admin</div>
+                    <div class="brand-sub">Intelligence & Control Layer</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-dot" title="System Operational"></div>
+                <span style="font-size:0.75rem;color:var(--gray-mid)">Operational</span>
+                <a href="../dashboard/index.html" class="dash-link">← Dashboard</a>
+            </div>
+        </header>
+
+        <!-- Sidebar Nav -->
+        <nav>
+            <div class="nav-label">Management</div>
+            <a class="nav-item active" data-page="alerts" href="#">
+                <span class="nav-icon">🔔</span> Alerts
+            </a>
+            <a class="nav-item" data-page="reports" href="#">
+                <span class="nav-icon">📊</span> Reports
+            </a>
+            <a class="nav-item" data-page="recommendations" href="#">
+                <span class="nav-icon">🌱</span> Crop AI
+            </a>
+            <a class="nav-item" data-page="market" href="#">
+                <span class="nav-icon">📈</span> Market Prices
+            </a>
+            <div class="nav-label">Operations</div>
+            <a class="nav-item" data-page="override" href="#">
+                <span class="nav-icon">⚙️</span> Manual Override
+            </a>
+            <a class="nav-item" data-page="camera" href="#">
+                <span class="nav-icon">📷</span> Camera Relay
+            </a>
+            <div class="nav-label">System</div>
+            <a class="nav-item" data-page="status" href="#">
+                <span class="nav-icon">🖥️</span> Node Status
+            </a>
+        </nav>
+
+        <!-- Content -->
+        <main class="content">
+
+            <!-- ── ALERTS PAGE ─── -->
+            <div class="page active" id="page-alerts">
+                <div class="page-title">Alert Management</div>
+                <div class="page-sub">Active alerts requiring attention — click Acknowledge to dismiss</div>
+                <div class="alert-list" id="alert-list">
+                    <div style="text-align:center;color:var(--gray-mid);padding:2rem">Loading alerts…</div>
+                </div>
+            </div>
+
+            <!-- ── REPORTS PAGE ─── -->
+            <div class="page" id="page-reports">
+                <div class="page-title">Irrigation Reports</div>
+                <div class="page-sub">Per-zone water usage over the last 7 days</div>
+                <div class="card">
+                    <div class="card-title">Zone Summary</div>
+                    <div style="overflow-x:auto">
+                        <table class="data-table" id="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Zone</th>
+                                    <th>Events</th>
+                                    <th>Total Water (L)</th>
+                                    <th>Total Duration (h)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-tbody">
+                                <tr>
+                                    <td colspan="4" style="text-align:center;color:var(--gray-mid)">Loading…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Water Usage Chart</div>
+                    <div class="chart-wrap"><canvas id="report-chart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- ── CROP AI PAGE ─── -->
+            <div class="page" id="page-recommendations">
+                <div class="page-title">AI Crop Recommendations</div>
+                <div class="page-sub">ML-powered crop suitability scores based on current soil and weather</div>
+                <div class="card">
+                    <div class="card-grid" id="crop-grid">
+                        <div style="color:var(--gray-mid)">Loading…</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── MARKET PAGE ─── -->
+            <div class="page" id="page-market">
+                <div class="page-title">Market Prices</div>
+                <div class="page-sub">APMC Bangalore — simulated live prices</div>
+                <div class="card-grid" id="market-grid">
+                    <div style="color:var(--gray-mid)">Loading…</div>
+                </div>
+            </div>
+
+            <!-- ── OVERRIDE PAGE ─── -->
+            <div class="page" id="page-override">
+                <div class="page-title">Manual Irrigation Override</div>
+                <div class="page-sub">Manually start or stop irrigation for any zone — bypasses ML decision</div>
+                <div class="card">
+                    <div class="card-title">Override Control</div>
+                    <div class="override-form">
+                        <div class="form-group">
+                            <label>Zone</label>
+                            <select id="override-zone">
+                                <option value="zone-1">zone-1 (North Block)</option>
+                                <option value="zone-2">zone-2 (East Block)</option>
+                                <option value="zone-3">zone-3 (South Block)</option>
+                                <option value="zone-4">zone-4 (West Block)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Duration (minutes)</label>
+                            <input type="number" id="override-duration" value="15" min="1" max="120" />
+                        </div>
+                        <div style="display:flex;gap:0.75rem;">
+                            <button class="btn-primary" onclick="sendOverride('on')">▶ Start Irrigation</button>
+                            <button class="btn-danger" onclick="sendOverride('off')">■ Stop Irrigation</button>
+                        </div>
+                        <div id="override-result"
+                            style="font-size:0.78rem;color:var(--gray-mid);margin-top:0.5rem;font-family:var(--mono);">
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Override History</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Zone</th>
+                                <th>Action</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody id="override-history"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ── CAMERA PAGE ─── -->
+            <div class="page" id="page-camera">
+                <div class="page-title">Camera Event Relay</div>
+                <div class="page-sub">Simulated motion / intruder detection events from field cameras</div>
+                <div class="camera-grid" id="camera-grid">
+                    <div style="color:var(--gray-mid)">Loading camera events…</div>
+                </div>
+            </div>
+
+            <!-- ── STATUS PAGE ─── -->
+            <div class="page" id="page-status">
+                <div class="page-title">System Status</div>
+                <div class="page-sub">Overall platform health and sensor node uptime</div>
+                <div class="card">
+                    <div id="status-content"
+                        style="font-family:var(--mono);font-size:0.82rem;line-height:2;color:var(--gray-light)">
+                        Loading…
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const API = window.location.hostname === 'localhost'
+            ? 'http://localhost:8000'
+            : `${window.location.protocol}//${window.location.host}`;
+
+        // ── Navigation ─────────────────────────────────
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.addEventListener('click', e => {
+                e.preventDefault();
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                el.classList.add('active');
+                document.getElementById('page-' + el.dataset.page).classList.add('active');
+                loadPage(el.dataset.page);
+            });
+        });
+
+        const overrideHistory = [];
+
+        // ── Page Loaders ───────────────────────────────
+        async function loadPage(name) {
+            if (name === 'alerts') await loadAlerts();
+            if (name === 'reports') await loadReports();
+            if (name === 'recommendations') await loadCropAI();
+            if (name === 'market') await loadMarket();
+            if (name === 'camera') await loadCamera();
+            if (name === 'status') await loadStatus();
+        }
+
+        // ── Alerts ────────────────────────────────────
+        async function loadAlerts() {
+            try {
+                const r = await fetch(`${API}/api/v1/alerts/?unacknowledged_only=false&limit=30`);
+                if (!r.ok) throw new Error('Failed');
+                const data = await r.json();
+                renderAlerts(data);
+            } catch { renderAlerts([]); }
+        }
+
+        function renderAlerts(data) {
+            const el = document.getElementById('alert-list');
+            if (data.length === 0) {
+                el.innerHTML = '<div style="text-align:center;color:var(--gray-mid);padding:2rem">No alerts — system is clean ✓</div>';
+                return;
+            }
+            el.innerHTML = data.map(a => {
+                const sev = (a.severity || '').toLowerCase();
+                const cls = sev === 'critical' ? 'critical' : sev === 'warning' ? 'warning' : '';
+                const color = sev === 'critical' ? 'var(--red-text)' : sev === 'warning' ? 'var(--orange-text)' : 'var(--gray-mid)';
+                const ts = a.created_at ? new Date(a.created_at).toLocaleString('en-IN') : '--';
+                return `
+      <div class="alert-row ${cls}">
+        <div class="alert-info-col">
+          <div class="alert-type-badge" style="color:${color}">${a.alert_type}</div>
+          <div class="alert-msg">${a.message}</div>
+          <div class="alert-meta">${ts} · ${a.zone_id || 'Global'} · ${a.severity}</div>
+        </div>
+        ${!a.acknowledged ? `<button class="ack-btn" onclick="acknowledgeAlert(${a.id}, this)">Acknowledge</button>` : '<span style="font-size:0.65rem;color:var(--gray-mid)">Acknowledged</span>'}
+      </div>`;
+            }).join('');
+        }
+
+        async function acknowledgeAlert(id, btn) {
+            try {
+                await fetch(`${API}/api/v1/alerts/${id}/acknowledge`, { method: 'POST' });
+                btn.textContent = 'Done ✓';
+                btn.disabled = true;
+                btn.style.color = 'var(--green-text)';
+            } catch { btn.textContent = 'Error'; }
+        }
+
+        // ── Reports ───────────────────────────────────
+        let reportChart = null;
+        async function loadReports() {
+            try {
+                const r = await fetch(`${API}/api/v1/admin/reports/irrigation-summary?days=7`);
+                if (!r.ok) throw new Error();
+                const data = await r.json();
+                const tbody = document.getElementById('report-tbody');
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--gray-mid)">No data yet — run some irrigation cycles</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(z => `
+      <tr>
+        <td>${z.zone_id}</td>
+        <td>${z.event_count}</td>
+        <td>${z.total_water_litres.toFixed(1)}</td>
+        <td>${z.total_duration_hours.toFixed(2)}</td>
+      </tr>`).join('');
+
+                const ctx = document.getElementById('report-chart').getContext('2d');
+                if (reportChart) reportChart.destroy();
+                reportChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.zone_id),
+                        datasets: [{
+                            label: 'Water Used (L)',
+                            data: data.map(d => d.total_water_litres),
+                            backgroundColor: 'rgba(255,255,255,0.12)',
+                            borderColor: '#ffffff',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#909090', font: { family: 'JetBrains Mono', size: 11 } } },
+                            tooltip: { backgroundColor: '#181818', borderColor: '#2a2a2a', borderWidth: 1, titleColor: '#f0f0f0', bodyColor: '#b0b0b0' }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#606060' }, grid: { color: '#181818' } },
+                            y: { ticks: { color: '#606060' }, grid: { color: '#1e1e1e' } }
+                        }
+                    }
+                });
+            } catch { }
+        }
+
+        // ── Crop AI ───────────────────────────────────
+        async function loadCropAI() {
+            try {
+                const r = await fetch(`${API}/api/v1/admin/reports/crop-recommendations`);
+                if (!r.ok) throw new Error();
+                const data = await r.json();
+                const grid = document.getElementById('crop-grid');
+                grid.innerHTML = data.recommendations.map(c => `
+      <div class="crop-card">
+        <div class="crop-name">${c.crop}</div>
+        <div class="crop-score">
+          <div class="score-bar"><div class="score-fill" style="width:${c.suitability_score * 100}%"></div></div>
+          <span class="score-val">${(c.suitability_score * 100).toFixed(0)}%</span>
+        </div>
+        <div class="crop-meta">
+          💧 ${c.water_requirement} water<br>
+          🌾 ${c.expected_yield_tons_ha} t/ha expected<br>
+          ${c.notes}
+        </div>
+      </div>`).join('');
+            } catch {
+                document.getElementById('crop-grid').innerHTML = '<div style="color:var(--gray-mid)">Failed to load</div>';
+            }
+        }
+
+        // ── Market ────────────────────────────────────
+        async function loadMarket() {
+            try {
+                const r = await fetch(`${API}/api/v1/admin/reports/market-prices`);
+                if (!r.ok) throw new Error();
+                const data = await r.json();
+                const grid = document.getElementById('market-grid');
+                grid.innerHTML = data.prices.map(p => `
+      <div class="market-card">
+        <div class="market-name">${p.crop}</div>
+        <div class="market-price">₹${p.price_per_quintal_inr}</div>
+        <div class="market-sub">per quintal · ${p.market}</div>
+        <div class="market-trend ${p.trend}">
+          ${p.trend === 'UP' ? '↑ Rising' : p.trend === 'DOWN' ? '↓ Falling' : '→ Stable'}
+        </div>
+      </div>`).join('');
+            } catch { }
+        }
+
+        // ── Override ──────────────────────────────────
+        async function sendOverride(action) {
+            const zone = document.getElementById('override-zone').value;
+            const dur = parseInt(document.getElementById('override-duration').value) || 15;
+            const result = document.getElementById('override-result');
+            result.textContent = 'Sending…';
+            try {
+                const r = await fetch(`${API}/api/v1/irrigation/manual-override`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ zone_id: zone, action, duration_minutes: dur }),
+                });
+                const data = await r.json();
+                result.textContent = `✓ Override sent: ${action.toUpperCase()} for ${zone} (${dur} min)`;
+                const now = new Date().toLocaleTimeString('en-IN', { hour12: false });
+                overrideHistory.unshift(`<tr><td>${now}</td><td>${zone}</td><td><span class="badge ${action === 'on' ? 'badge-green' : 'badge-red'}">${action.toUpperCase()}</span></td><td>${dur} min</td></tr>`);
+                document.getElementById('override-history').innerHTML = overrideHistory.slice(0, 10).join('');
+            } catch (e) { result.textContent = 'Error: ' + e.message; }
+        }
+
+        // ── Camera ────────────────────────────────────
+        async function loadCamera() {
+            try {
+                const r = await fetch(`${API}/api/v1/admin/camera/events`);
+                if (!r.ok) throw new Error();
+                const data = await r.json();
+                const grid = document.getElementById('camera-grid');
+                if (data.length === 0) {
+                    grid.innerHTML = '<div style="color:var(--gray-mid);padding:1rem">No camera events detected recently</div>';
+                    return;
+                }
+                grid.innerHTML = data.map((e, i) => {
+                    const ts = e.timestamp ? new Date(e.timestamp).toLocaleTimeString('en-IN', { hour12: false }) : '--';
+                    return `
+        <div class="camera-card">
+          <div class="camera-preview">
+            <span class="camera-label">${e.node_id}</span>
+            <span class="camera-live">● LIVE</span>
+            <span class="camera-icon">📷</span>
+          </div>
+          <div class="camera-info">
+            <div class="camera-event-type">${e.event}</div>
+            <div class="camera-time">${e.zone_id} · ${ts}</div>
+          </div>
+        </div>`;
+                }).join('');
+            } catch {
+                document.getElementById('camera-grid').innerHTML = '<div style="color:var(--gray-mid)">No events to display</div>';
+            }
+        }
+
+        // ── Status ────────────────────────────────────
+        async function loadStatus() {
+            try {
+                const r = await fetch(`${API}/api/v1/admin/system/status`);
+                if (!r.ok) throw new Error();
+                const d = await r.json();
+                document.getElementById('status-content').innerHTML = [
+                    `<strong>Status:</strong> <span style="color:var(--green-text)">${d.status.toUpperCase()}</span>`,
+                    `<strong>Sensors active (last 10 min):</strong> ${d.sensors_active_last_10min}`,
+                    `<strong>Open alerts:</strong> ${d.open_alerts}`,
+                    `<strong>Checked at:</strong> ${new Date(d.checked_at).toLocaleString('en-IN')}`,
+                    `<strong>API:</strong> ${API}`,
+                ].join('<br>');
+            } catch {
+                document.getElementById('status-content').textContent = 'Unable to reach API — is the backend running?';
+            }
+        }
+
+        // ── WebSocket for real-time alert updates ────
+        const WS_URL = API.replace('http', 'ws') + '/ws/stream';
+        let ws;
+        function connectWS() {
+            ws = new WebSocket(WS_URL);
+            ws.onmessage = ({ data }) => {
+                try {
+                    const msg = JSON.parse(data);
+                    if (msg.type === 'alert') {
+                        const page = document.getElementById('page-alerts');
+                        if (page.classList.contains('active')) loadAlerts();
+                    }
+                } catch { }
+            };
+            ws.onclose = () => setTimeout(connectWS, 3000);
+        }
+
+        // ── Init ──────────────────────────────────────
+        loadAlerts();
+        connectWS();
+    </script>
+</body>
+
+</html>

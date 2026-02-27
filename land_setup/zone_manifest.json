@@ -1,0 +1,56 @@
+{
+    "zones": [
+        {
+            "zone_id": "zone-1",
+            "zone_name": "North Block",
+            "pump_id": "pump-A",
+            "sensor_nodes": [
+                "node-N1"
+            ],
+            "moisture_threshold": 0.30,
+            "irrigation_duration_minutes": 20,
+            "pump_capacity_lph": 1200,
+            "crop_water_requirement_mm_day": 5.5,
+            "priority": 1
+        },
+        {
+            "zone_id": "zone-2",
+            "zone_name": "East Block",
+            "pump_id": "pump-B",
+            "sensor_nodes": [
+                "node-N2"
+            ],
+            "moisture_threshold": 0.32,
+            "irrigation_duration_minutes": 18,
+            "pump_capacity_lph": 1200,
+            "crop_water_requirement_mm_day": 5.5,
+            "priority": 2
+        },
+        {
+            "zone_id": "zone-3",
+            "zone_name": "South Block",
+            "pump_id": "pump-C",
+            "sensor_nodes": [
+                "node-N3"
+            ],
+            "moisture_threshold": 0.28,
+            "irrigation_duration_minutes": 22,
+            "pump_capacity_lph": 900,
+            "crop_water_requirement_mm_day": 5.0,
+            "priority": 3
+        },
+        {
+            "zone_id": "zone-4",
+            "zone_name": "West Block",
+            "pump_id": "pump-D",
+            "sensor_nodes": [
+                "node-N4"
+            ],
+            "moisture_threshold": 0.31,
+            "irrigation_duration_minutes": 20,
+            "pump_capacity_lph": 900,
+            "crop_water_requirement_mm_day": 5.0,
+            "priority": 4
+        }
+    ]
+}

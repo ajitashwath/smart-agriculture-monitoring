@@ -1,0 +1,104 @@
+version: "3.9"
+
+services:
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    container_name: sams-mqtt
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./infra/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mqtt_data:/mosquitto/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "mosquitto_sub", "-t", "$$SYS/#", "-C", "1", "-i", "healthcheck", "-W", "3" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  cloud:
+    build:
+      context: ./cloud
+      dockerfile: Dockerfile
+    container_name: sams-cloud
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./data/sams.db
+    volumes:
+      - cloud_data:/app/data
+      - ./land_setup/profiles:/app/profiles:ro
+      - ./land_setup/zone_manifest.json:/app/zone_manifest.json:ro
+    depends_on:
+      mqtt:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+  edge:
+    build:
+      context: ./edge
+      dockerfile: Dockerfile
+    container_name: sams-edge
+    env_file:
+      - .env
+    environment:
+      - MQTT_BROKER_HOST=mqtt
+      - CLOUD_API_URL=http://cloud:8000
+    depends_on:
+      mqtt:
+        condition: service_healthy
+      cloud:
+        condition: service_healthy
+    volumes:
+      - edge_buffer:/app/buffer
+    restart: unless-stopped
+  ml_trainer:
+    build:
+      context: ./ml_engine
+      dockerfile: Dockerfile
+    container_name: sams-ml-trainer
+    command: [ "python", "train_all.py" ]
+    volumes:
+      - ml_models:/app/models
+    profiles:
+      - train
+  dashboard:
+    image: nginx:alpine
+    container_name: sams-dashboard
+    ports:
+      - "3000:80"
+    volumes:
+      - ./dashboard:/usr/share/nginx/html:ro
+      - ./infra/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - cloud
+    restart: unless-stopped
+  admin:
+    image: nginx:alpine
+    container_name: sams-admin
+    ports:
+      - "3001:80"
+    volumes:
+      - ./admin_panel:/usr/share/nginx/html:ro
+      - ./infra/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - cloud
+    restart: unless-stopped
+
+volumes:
+  mqtt_data:
+  cloud_data:
+  edge_buffer:
+  ml_models:
+
+
+networks:
+  default:
+    name: sams-network
