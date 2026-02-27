@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # SAMS — Smart Agriculture Monitoring System
 
 <div align="center">
@@ -45,7 +44,7 @@ flowchart TD
 
 ---
 
-## 🗂️ Monorepo Structure
+## Monolithic Structure
 
 ```
 sams/
@@ -275,6 +274,3 @@ COOLDOWN_MINUTES=15         # anti-flap cooldown
 ML_MODEL_TYPE=rf            # rf | torch
 CYCLE_DELAY_SECONDS=30      # scheduler cycle
 ```
-=======
-
->>>>>>> adedcefae8a1fecc57343b983e0a699266bbff48
