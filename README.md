@@ -1,4 +1,3 @@
-# SAMS — Smart Agriculture Monitoring System
 
 <div align="center">
 
@@ -25,21 +24,21 @@
 
 ```mermaid
 flowchart TD
-    A[Land Setup\nSoil · Topology · Crop Profiles] --> B[Node Mapping\nZones · Pumps · Thresholds]
-    B --> C[Sensor Simulator\nMQTT Multi-node Publisher\nMoisture·Temp·Humidity]
-    C --> D[Raspberry Pi Gateway\nMQTT → Validate → Buffer → Forward\nAMD Kria-ready]
-    D --> E[Cloud Backend\nFastAPI · SQLite · WebSocket]
-    E --> F[Weather Service\nMock / OpenWeatherMap\nRain Probability · Temp · Wind]
-    E --> G[Evaporation Module\nHargreaves-Samani ET₀]
-    F --> H[ML Engine\nRandomForest + PyTorch MLP\nCPU-Only · AMD GPU-ready]
+    A["Land Setup<br/>Soil · Topology · Crop Profiles"] --> B["Node Mapping<br/>Zones · Pumps · Thresholds"]
+    B --> C["Sensor Simulator<br/>MQTT Multi-node Publisher<br/>Moisture · Temp · Humidity"]
+    C --> D["Raspberry Pi Gateway<br/>MQTT → Validate → Buffer → Forward<br/>AMD Kria-ready"]
+    D --> E["Cloud Backend<br/>FastAPI · SQLite · WebSocket"]
+    E --> F["Weather Service<br/>Mock / OpenWeatherMap<br/>Rain Probability · Temp · Wind"]
+    E --> G["Evaporation Module<br/>Hargreaves-Samani ET₀"]
+    F --> H["ML Engine<br/>RandomForest + PyTorch MLP<br/>CPU-Only · AMD GPU-ready"]
     G --> H
-    H --> I[Decision Engine\nML Primary + 5 Safety Guards]
-    I --> J{Water\nRequired?}
-    J -- YES --> K[Pump Controller\nON · Duration · Safety Timeout\nWater Dispensed Logging]
-    J -- NO --> L[Wait for\nNext Cycle]
-    K --> M[Dashboard\nLive WebSocket · Chart.js]
+    H --> I["Decision Engine<br/>ML Primary + 5 Safety Guards"]
+    I --> J{"Water<br/>Required?"}
+    J -- YES --> K["Pump Controller<br/>ON · Duration · Safety Timeout<br/>Water Dispensed Logging"]
+    J -- NO --> L["Wait for<br/>Next Cycle"]
+    K --> M["Dashboard<br/>Live WebSocket · Chart.js"]
     L --> M
-    M --> N[Admin Panel\nAlerts · Reports · Override\nCamera Relay · Crop AI]
+    M --> N["Admin Panel<br/>Alerts · Reports · Override<br/>Camera Relay · Crop AI"]
 ```
 
 ---
@@ -122,8 +121,7 @@ sams/
 
 ---
 
-## 🚀 Quick Start
-
+## Quick Start
 ### Option A — Docker (Recommended)
 
 ```bash
@@ -173,8 +171,7 @@ python ml_engine/train_all.py
 
 ---
 
-## 🧪 Running Tests
-
+## Running Tests
 ```bash
 # Install test deps
 pip install pytest pytest-asyncio anyio httpx
@@ -189,8 +186,7 @@ pytest tests/test_cloud_api.py -v
 
 ---
 
-## 🔄 Pipeline Stages
-
+## Pipeline Stages
 | Stage | Module | Description |
 |-------|--------|-------------|
 | 1 | `land_setup/` | Farm profiles, soil/topology/crop data |
@@ -211,7 +207,6 @@ pytest tests/test_cloud_api.py -v
 ---
 
 ## ML Pipeline
-
 - **Features**: `soil_moisture`, `temperature_c`, `humidity_pct`, `wind_speed_mps`, `rain_probability`, `et0_mm_day`, `crop_type_enc`, `soil_type_enc`
 - **Outputs**: `irrigation_needed (bool)`, `confidence (0–1)`, `recommended_duration_minutes (int)`
 - **Models**: RandomForest (baseline) + PyTorch MLP dual-head (classification + regression)
@@ -230,7 +225,6 @@ pytest tests/test_cloud_api.py -v
 ---
 
 ## AMD Future Roadmap
-
 | Current | Future | Path |
 |---------|--------|------|
 | Raspberry Pi 4B | AMD Kria KV260 SOM | Replace `RaspberryPiDevice` with `KriaSOMDevice` in `edge/pi_gateway.py` |
@@ -242,7 +236,6 @@ The `EdgeDevice` abstract base class in `edge/pi_gateway.py` is designed exactly
 ---
 
 ## API Reference
-
 | Method | Endpoint | Description |
 |--------|---------|-------------|
 | `GET` | `/health` | System health check |
@@ -264,7 +257,6 @@ The `EdgeDevice` abstract base class in `edge/pi_gateway.py` is designed exactly
 ---
 
 ## Environment Variables
-
 See `.env.example` for the full list. Key variables:
 
 ```env
